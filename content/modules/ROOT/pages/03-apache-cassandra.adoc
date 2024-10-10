@@ -209,6 +209,18 @@ To monitor the Cassandra pod until it's ready, use the following command:
 watch oc get pods -o wide
 ----
 
+[,bash,role="execute"]
+----
+Every 2.0s: oc get pods -o wide                             showroom-5c744474d5-nw6x2: Thu Oct 10 20:14:03 2024
+
+NAME          READY   STATUS    RESTARTS   AGE   IP            NODE                                        NOMI
+NATED NODE   READINESS GATES
+cassandra-0   1/1     Running   0          42s   10.128.2.28   ip-10-0-33-246.us-east-2.compute.internal   <non
+e>           <none>
+cqlsh         1/1     Running   0          42s   10.131.0.29   ip-10-0-27-203.us-east-2.compute.internal   <non
+e>           <none>
+----
+
 This may take a few minutes. When the `cassandra-0` pod is in `STATUS Running` and `READY 1/1`, hit `ctrl-c` to exit.
 
 == Step 4: Inspect the Portworx Volume
@@ -218,7 +230,46 @@ Next, inspect the underlying volumes for our Cassandra pod:
 [,bash,role="execute"]
 ----
 pxctl volume inspect $(oc get pvc | grep cassandra | awk '{print $3}')
+----
 
+[,bash,role="execute"]
+----
+[lab-user: ~]$ pxctl volume inspect $(oc get pvc | grep cassandra | awk '{print $3}')
+        Volume                   :  1131154436557386643
+        Name                     :  pvc-a92c1cb5-82b4-4482-a395-a17d5fcd11be
+        Group                    :  cassandra_vg
+        Size                     :  1.0 GiB
+        Format                   :  ext4
+        HA                       :  2
+        IO Priority              :  HIGH
+        Creation time            :  Oct 10 20:13:22 UTC 2024
+        Shared                   :  no
+        Status                   :  up
+        State                    :  Attached: fc6d58ac-c584-4b2d-a5c1-4cdd4ec273a2 (10.0.33.246)
+        Last Attached            :  Oct 10 20:13:23 UTC 2024
+        Device Path              :  /dev/pxd/pxd1131154436557386643
+        Labels                   :  namespace=default,priority_io=high,pvc=cassandra-data-cassandra-0,repl=2,app=cassandra,group=cassandra_vg
+        Mount Options            :  discard
+        Reads                    :  17
+        Reads MS                 :  3
+        Bytes Read               :  69632
+        Writes                   :  991
+        Writes MS                :  651
+        Bytes Written            :  29532160
+        IOs in progress          :  0
+        Bytes used               :  624 KiB
+        Replica sets on nodes:
+                Set 0
+                  Node           : 10.0.33.246
+                   Pool UUID     : 26bd0ec3-5132-4413-9fa4-cc1ca8ea416b
+                  Node           : 10.0.27.203
+                   Pool UUID     : f0069555-0c6a-49c5-84dd-ba1c18cc7624
+        Replication Status       :  Up
+        Volume consumers         : 
+                - Name           : cassandra-0 (496b1df3-f87d-4091-a500-819ee6e05e01) (Pod)
+                  Namespace      : default
+                  Running on     : ip-10-0-33-246.us-east-2.compute.internal
+                  Controlled by  : cassandra (StatefulSet)
 ----
 
 Look for:
@@ -252,6 +303,8 @@ INSERT INTO portworx.features (id, name, value) VALUES ('px-2', 'cloudsnaps', 'b
 INSERT INTO portworx.features (id, name, value) VALUES ('px-3', 'STORK', 'convergence, scale, and high availability!');
 ----
 
+Type `quit` in the cqlsh shell to exit back to the lab-user terminal
+
 == Step 6: Flush Data to Disk
 
 [,bash,role="execute"]
@@ -263,15 +316,15 @@ Flushing data to disk ensures data persistence for failover tests.
 
 == Step 7: Simulate Node Failure and Verify Failover
 
-Cordon the node where Cassandra is running:
+Cordon the node where Cassandra is running. You should a message that the node was cordoned once completed.
 
 [,bash,role="execute"]
 ----
-ORIGINAL_NODE=$(oc get pods -l app=cassandra -o jsonpath='{.items[0].spec.nodeName}')
-oc adm cordon $ORIGINAL_NODE
+oc adm cordon $(oc get pods -l app=cassandra -o jsonpath='{.items[0].spec.nodeName}')
 ----
 
-Delete the Cassandra pod:
+
+Delete the Cassandra pod. After a few moments, you will get a mesage that the pod is deleted 
 
 [,bash,role="execute"]
 ----
@@ -287,13 +340,20 @@ To verify the new pod is running:
 oc get pods -l app=cassandra -o wide -w
 ----
 
+[,bash,role="execute"]
+----
+[lab-user: ~]$ oc get pods -l app=cassandra -o wide -w
+NAME          READY   STATUS    RESTARTS   AGE   IP            NODE                                        NOMINATED NODE   READINESS GATES
+cassandra-0   1/1     Running   0          58s   10.131.0.31   ip-10-0-27-203.us-east-2.compute.internal   <none>           <none>
+----
+
 Once the new pod is `Running` and `READY(1/1)`, press `ctrl-c` to exit.
 
 Uncordon the node:
 
 [,bash,role="execute"]
 ----
-oc adm uncordon ${ORIGINAL_NODE}
+oc adm uncordon $(oc get pods -l app=cassandra -o jsonpath='{.items[0].spec.nodeName}')
 ----
 
 == Step 8: Verify Data Availability After Failover
@@ -312,6 +372,21 @@ Select rows from the keyspace:
 SELECT id, name, value FROM portworx.features;
 ----
 
+[,sql,role="execute"]
+----
+cqlsh> SELECT id, name, value FROM portworx.features;
+
+ id   | name       | value
+------+------------+--------------------------------------------
+ px-2 | cloudsnaps |          backup/restore to/from any cloud!
+ px-3 |      STORK | convergence, scale, and high availability!
+ px-1 |  snapshots |                    point in time recovery!
+
+(3 rows)
+cqlsh> 
+----
+
 Verify that the data is still present, which confirms that failover was successful.
 
-Log out of the CQL Shell session by pressing `Ctrl-C`.
+Log out of the CQL Shell session by pressing `Ctrl-C` typing `quit`
+
