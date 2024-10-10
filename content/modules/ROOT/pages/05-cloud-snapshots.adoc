@@ -247,7 +247,68 @@ Events:
   Normal  ExternalProvisioning  7s    persistentvolume-controller                                                Waiting for a volume to be created either by the external provisioner 'stork-snapshot' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
 ----
 
-TODO: Show the use of this new PVC
+Now that we have created a clone PVC, we can deploy a new MySQL pod using the cloned data.
+
+[,bash,role="execute"]
+----
+cat <<EOF | oc create -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-clone
+spec:
+  selector:
+    matchLabels:
+      app: mysql-clone
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql-clone
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.6
+        env:
+        - name: MYSQL_ALLOW_EMPTY_PASSWORD
+          value: "1"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-data
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: px-mysql-clone-pvc
+EOF
+----
+
+Wait for the new MySQL pod to start, and then verify that it is running:
+
+[,bash,role="execute"]
+----
+oc get pods -l app=mysql-clone -w
+----
+
+Once the pod is running, you can check that the data has been restored by connecting to the MySQL instance and verifying that the demodb database exists:
+
+[,bash,role="execute"]
+----
+oc exec -it $(oc get pods -l app=mysql-clone | grep Running | awk '{print $1}') -- mysql -u root -e "SHOW DATABASES;"
+----
+
+[,bash,role="execute"]
+----
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| demodb             |
+| mysql              |
+| performance_schema |
++--------------------+
+----
 
 == Summary
 
