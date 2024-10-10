@@ -69,6 +69,14 @@ A `PersistentVolumeClaim` is successfully provisioned once it reaches the "Bound
 oc get pvc px-pvc
 ----
 
+[,bash,role="execute"]
+----
+lab-user: ~]$ oc get pvc px-pvc
+NAME     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+px-pvc   Bound    pvc-32bc4cb4-f91a-4c6f-b248-2a29290c5080   2Gi        RWO            px-repl3-sc    <unset>                 5s
+----
+
+
 You should see in the example output that our PVC is in the *Bound* state.
 
 Let's proceed to the next step to further inspect the volume.
@@ -81,6 +89,40 @@ Now, we will use `pxctl` to inspect the underlying volume for our PVC.
 ----
 pxctl volume inspect $(oc get pvc px-pvc -o jsonpath='{.spec.volumeName}')
 
+----
+
+[,bash,role="execute"]
+----
+[lab-user: ~]$ pxctl volume inspect $(oc get pvc px-pvc -o jsonpath='{.spec.volumeName}')
+        Volume                   :  882972500633515140
+        Name                     :  pvc-32bc4cb4-f91a-4c6f-b248-2a29290c5080
+        Size                     :  2.0 GiB
+        Format                   :  ext4
+        HA                       :  3
+        IO Priority              :  HIGH
+        Creation time            :  Oct 10 19:30:06 UTC 2024
+        Shared                   :  no
+        Status                   :  up
+        State                    :  detached
+        Labels                   :  repl=3,namespace=default,priority_io=high,pvc=px-pvc
+        Mount Options            :  discard
+        Reads                    :  0
+        Reads MS                 :  0
+        Bytes Read               :  0
+        Writes                   :  0
+        Writes MS                :  0
+        Bytes Written            :  0
+        IOs in progress          :  0
+        Bytes used               :  1.1 MiB
+        Replica sets on nodes:
+                Set 0
+                  Node           : 10.0.33.246
+                   Pool UUID     : 26bd0ec3-5132-4413-9fa4-cc1ca8ea416b
+                  Node           : 10.0.27.203
+                   Pool UUID     : f0069555-0c6a-49c5-84dd-ba1c18cc7624
+                  Node           : 10.0.27.102
+                   Pool UUID     : 316fb82a-0edd-47eb-a69b-9a96012b6613
+        Replication Status       :  Detached
 ----
 
 Make the following observations in the inspect output:

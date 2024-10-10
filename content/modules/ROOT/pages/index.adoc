@@ -18,11 +18,6 @@ This hands-on demo provides a Portworx deployment on OpenShift Container Platfor
 
 The terminal window to your right has the `oc` command we will use during the lab already installed, but we need to login to the cluster and set our default project.
 
-Use this command to login to the cluster:
-
-OpenShift API URL: {openshift_api_url} 
-Cluster Admin Username: {openshift_cluster_admin_username}
-Cluster Admin Password: {openshift_cluster_admin_password}
 
 [,bash,role="execute",subs="attributes"]
 ----

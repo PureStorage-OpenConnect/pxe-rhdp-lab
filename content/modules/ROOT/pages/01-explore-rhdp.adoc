@@ -61,7 +61,7 @@ Kubernetes control plane is running at https://api.cluster-8d7kj.8d7kj.sandbox71
 ----
 
 
-To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+To further debug and diagnose cluster problems, use `kubectl cluster-info dump`.
 
 
 == Portworx Configuration Review
@@ -85,22 +85,24 @@ To see the running Portworx pods:
 oc get pods -o wide -n portworx -l name=portworx
 ----
 
-Let's check the installation logs. This will check the last 50 lines of the log.
+[,bash,role="execute"]
+----
+[lab-user: ~]$ oc get pods -o wide -n portworx -l name=portworx
+NAME                             READY   STATUS    RESTARTS   AGE   IP            NODE                                        NOMINATED NODE   READINESS GATES
+portworx-storage-cluster-4xffj   1/1     Running   0          31m   10.0.27.102   ip-10-0-27-102.us-east-2.compute.internal   <none>           <none>
+portworx-storage-cluster-9fbrt   1/1     Running   0          31m   10.0.27.203   ip-10-0-27-203.us-east-2.compute.internal   <none>           <none>
+portworx-storage-cluster-zvl4q   1/1     Running   0          31m   10.0.33.246   ip-10-0-33-246.us-east-2.compute.internal   <none>           <none>
+----
+
+
+
+We can check the installation logs with the following command. This will check the last 50 lines of the log.
 
 [,bash,role="execute"]
 ----
 oc -n portworx logs --tail=50 $(oc get pods -l name=portworx -n portworx -o jsonpath='{.items[0].metadata.name}') -c portworx
 ----
 
-
-[,bash,role="execute"]
-----
-[lab-user: ~]$ oc get pods -o wide -n portworx -l name=portworx
-NAME                             READY   STATUS    RESTARTS   AGE   IP            NODE                                        NOMINATED NODE   READINESS GATES
-portworx-storage-cluster-4xffj   1/1     Running   0          25m   10.0.27.102   ip-10-0-27-102.us-east-2.compute.internal   <none>           <none>
-portworx-storage-cluster-9fbrt   1/1     Running   0          25m   10.0.27.203   ip-10-0-27-203.us-east-2.compute.internal   <none>           <none>
-portworx-storage-cluster-zvl4q   1/1     Running   0          25m   10.0.33.246   ip-10-0-33-246.us-east-2.compute.internal   <none>           <none>
-----
 
 == Add PXCTL Alias
 
