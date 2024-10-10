@@ -13,7 +13,7 @@ Create a StorageClass for use by Minio:
 
 [,bash,role="execute"]
 ----
-cat <<EOF > /tmp/px-ha-sc.yaml
+cat <<EOF | oc create -f -
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -52,7 +52,7 @@ until [[ `oc -n minio get pods | grep px-minio | grep Running | grep 1/1 | wc -l
 echo "Setup Complete ..."
 ----
 
-Run the command below to obtain the object store endpoint:
+Run the command below to obtain the object store endpoint. This may take a few moments to complete.
 
 [,bash,role="execute"]
 ----
@@ -130,12 +130,18 @@ Wait for the MySQL pod to start:
 oc get pods -l app=mysql -w
 ----
 
+[,bash,role="execute"]
+----
+lab-user: ~]$ oc get pods -l app=mysql -w
+NAME                    READY   STATUS    RESTARTS   AGE
+mysql-68ffdf6fc-vjl9r   1/1     Running   0          51s
+----
+
 Create a database named `demodb`:
 
 [,bash,role="execute"]
 ----
-POD=$(oc get pods -l app=mysql | grep Running | grep 1/1 | awk '{print $1}')
-oc exec -it $POD -- mysql -u root -e "CREATE DATABASE demodb"
+oc exec -it $(oc get pods -l app=mysql | grep Running | grep 1/1 | awk '{print $1}') -- mysql -u root -e "CREATE DATABASE demodb"
 ----
 
 == Take Cloud Snapshot
@@ -162,6 +168,30 @@ If the cloud credentials and volume snapshot were set up correctly, you can chec
 [,bash,role="execute"]
 ----
 oc describe stork-volumesnapshot mysql-snapshot
+----
+
+[,bash,role="execute"]
+----
+[lab-user: ~]$ oc describe stork-volumesnapshot mysql-snapshot
+Name:         mysql-snapshot
+Namespace:    default
+Labels:       SnapshotMetadata-PVName=pvc-5a0e1e4b-627e-492d-8c11-b8120131b022
+              SnapshotMetadata-Timestamp=1728593206100508730
+Annotations:  portworx/snapshot-type: cloud
+API Version:  volumesnapshot.external-storage.k8s.io/v1
+Kind:         VolumeSnapshot
+Metadata:
+  Creation Timestamp:  2024-10-10T20:46:46Z
+  Generation:          2
+  Resource Version:    99379
+  UID:                 132c6fc5-f9d6-4c23-8e28-1695b235a08f
+Spec:
+  Persistent Volume Claim Name:  px-mysql-pvc
+  Snapshot Data Name:            
+Status:
+  Conditions:          <nil>
+  Creation Timestamp:  <nil>
+Events:                <none>
 ----
 
 == Clone PVC
@@ -192,6 +222,29 @@ You can check the status of the clone by running the following command:
 [,bash,role="execute"]
 ----
 oc describe pvc px-mysql-clone-pvc
+----
+
+[,bash,role="execute"]
+----
+Name:          px-mysql-clone-pvc
+Namespace:     default
+StorageClass:  stork-snapshot-sc
+Status:        Pending
+Volume:        
+Labels:        <none>
+Annotations:   snapshot.alpha.kubernetes.io/snapshot: mysql-snapshot
+               volume.beta.kubernetes.io/storage-provisioner: stork-snapshot
+               volume.kubernetes.io/storage-provisioner: stork-snapshot
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      
+Access Modes:  
+VolumeMode:    Filesystem
+Used By:       <none>
+Events:
+  Type    Reason                Age   From                                                                       Message
+  ----    ------                ----  ----                                                                       -------
+  Normal  Provisioning          7s    stork-snapshot_stork-9d7ddf748-wwscs_e84e6efa-0f6d-411a-b664-0452fbba2bd2  External provisioner is provisioning volume for claim "default/px-mysql-clone-pvc"
+  Normal  ExternalProvisioning  7s    persistentvolume-controller                                                Waiting for a volume to be created either by the external provisioner 'stork-snapshot' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
 ----
 
 TODO: Show the use of this new PVC
