@@ -21,7 +21,7 @@ The terminal window to your right has the `oc` command we will use during the la
 
 [,bash,role="execute",subs="attributes"]
 ----
-oc login {openshift_api_url} -u {openshift_cluster_admin_username}  -p {openshift_cluster_admin_password} -insecure-skip-tls-verify=true
+oc login {openshift_api_url} -u {openshift_cluster_admin_username}  -p {openshift_cluster_admin_password} --insecure-skip-tls-verify=true
 ----
 
 Next, run this command to set the current project to 'default'. 

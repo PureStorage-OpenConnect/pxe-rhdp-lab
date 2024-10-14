@@ -113,17 +113,17 @@ command line tool that allows users to manage Portworx resources across the clus
 To make it easier to run `pxctl` commands, we will add an alias to the
 shell.
 
-First, create an alias.
-[,bash,role="execute"]
-----
-alias pxctl="oc -n portworx exec $(oc get pods -l name=portworx -n portworx -o jsonpath='{.items[0].metadata.name}') -c portworx -it -- /opt/pwx/bin/pxctl"
-----
-
-Next, echo the alias to the `.bashrc` file so it gets loaded automatically if you relogin to the terminal.
+First, echo the alias to the `.bashrc` file so it gets loaded automatically if you relogin to the terminal.
 
 [,bash,role="execute"]
 ----
 echo 'alias pxctl="oc -n portworx exec $(oc get pods -l name=portworx -n portworx -o jsonpath='{.items[0].metadata.name}') -c portworx -it -- /opt/pwx/bin/pxctl"' >> ~/.bashrc
+----
+
+Next, use `source` to reload the .bashrc file
+
+----
+source ~/.bashrc
 ----
 
 Take a moment to review the Portworx configuration by running the

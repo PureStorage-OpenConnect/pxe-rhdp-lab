@@ -1,8 +1,10 @@
 = Lab 07 - PVC Auto Resize using AutoPilot
 
-== Introduction
+== Understanding Portworx Autopliot
 
-In this lab, we will explore how to dynamically manage the storage needs of a PostgreSQL deployment in OpenShift using Portworx and AutoPilot. We will create a PVC with volume expansion capabilities and deploy a PostgreSQL instance that uses this PVC. Additionally, we will implement an AutoPilot rule to automatically expand the volume when certain conditions are met, ensuring continuous operation without manual intervention or downtime. By the end of this lab, you will understand how to configure and verify automatic volume resizing, providing a robust solution for managing increasing storage demands.
+Portworx Autopilot automates the management of storage capacity and policies in Kubernetes environments. It intelligently monitors and takes actions to ensure that storage resources are optimized and always available, reducing manual intervention. Autopilot can help with storage provisioning, capacity scaling, and even handling specific actions when a storage volume reaches a defined threshold (e.g., adding more capacity to a volume or migrating data).
+
+In this exercise, we will explore how to dynamically manage the storage needs of a PostgreSQL deployment in OpenShift using Portworx and AutoPilot. We will create a PVC with volume expansion capabilities and deploy a PostgreSQL instance that uses this PVC. Additionally, we will implement an AutoPilot rule to automatically expand the volume when certain conditions are met, ensuring continuous operation without manual intervention or downtime. By the end of this lab, you will understand how to configure and verify automatic volume resizing, providing a robust solution for managing increasing storage demands.
 
 
 == Create StorageClass and PersistentVolumeClaim
@@ -78,8 +80,7 @@ Create a Secret to store the PostgreSQL password.
 
 [,bash,role="execute"]
 ----
-echo -n mysql123 > /tmp/password.txt
-oc create secret generic postgres-pass --from-file=/tmp/password.txt
+oc create secret generic postgres-pass --from-file=password=<(echo -n mysql123)
 ----
 
 == Deploy PostgreSQL
