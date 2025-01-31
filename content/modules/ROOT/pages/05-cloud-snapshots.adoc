@@ -26,11 +26,6 @@ parameters:
 EOF
 ----
 
-[,bash,role="execute"]
-----
-oc create -f /tmp/px-ha-sc.yaml
-----
-
 Next, deploy Minio onto the OCP cluster:
 
 [,bash,role="execute"]
