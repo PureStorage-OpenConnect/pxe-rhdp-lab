@@ -125,7 +125,7 @@ Wait for the MySQL pod to start:
 oc get pods -l app=mysql -w
 ----
 
-[,bash]
+[source,bash]
 ----
 NAME                    READY   STATUS    RESTARTS   AGE
 mysql-68ffdf6fc-vjl9r   1/1     Running   0          51s
