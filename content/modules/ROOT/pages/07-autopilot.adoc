@@ -125,7 +125,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: postgres-pass
-              key: password.txt
+              key: password
         - name: PGBENCH_PASSWORD
           value: superpostgres
         - name: PGDATA
