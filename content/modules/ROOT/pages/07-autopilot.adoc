@@ -32,10 +32,6 @@ The parameters are declarative policies for your storage volume. Notice the `all
 
 We also need to apply a ConfigMap to allow OpenShift's Prometheus instance to monitor Portworx events.
 
-[NOTE]
-====
-During the next test phase, omit this ConfigMap and wait 15 minutes after the pgbench command to ensure it is needed.
-====
 
 [,bash,role="execute"]
 ----
