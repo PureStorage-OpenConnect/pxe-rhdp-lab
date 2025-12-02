@@ -122,6 +122,7 @@ echo 'alias pxctl="oc -n portworx exec $(oc get pods -l name=portworx -n portwor
 
 Next, use `source` to reload the .bashrc file
 
+[,bash,role="execute"]
 ----
 source ~/.bashrc
 ----

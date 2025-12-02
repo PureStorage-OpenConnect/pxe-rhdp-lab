@@ -16,19 +16,18 @@ This hands-on demo provides a Portworx deployment on OpenShift Container Platfor
 
 === Lab Access
 
-The terminal window to your right has the `oc` command we will use during the lab already installed, but we need to login to the cluster and set our default project.
+The terminal window to your right has the `oc` command we will use during the lab already installed. Let's test it by running the following command:
 
 
 [,bash,role="execute",subs="attributes"]
 ----
-oc login {openshift_api_url} -u {openshift_cluster_admin_username}  -p {openshift_cluster_admin_password} --insecure-skip-tls-verify=true
+oc get nodes
 ----
 
-Next, run this command to set the current project to 'default'. 
+Run this command to set the current project to 'default'. 
 
 [,bash,role="execute"]
 ----
 oc project default
 ----
 
-NOTE:  The lab guide is available in Asciidoc on link:https://github.com/PureStorage-OpenConnect/pxe-rhdp-lab/tree/main/content/modules/ROOT/pages[Github] if you wish to save it for future reference.
